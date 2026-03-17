@@ -74,20 +74,64 @@ def arima_analysis(stock_symbol, label, s, e, forecast_horizon):
     return forecast_df, (stat_close, stat_diff, df)
 
 # --- India Stocks Only ---
+# sector_stocks = {
+#     "IT": {
+#         "TCS": "TCS.NS",
+#         "Wipro": "WIPRO.NS",
+#         "Infosys": "INFY.NS",
+#         "HCL Technologies": "HCLTECH.NS",
+#         "Tech Mahindra": "TECHM.NS"
+#     },
+#     "Banking": {
+#         "HDFC Bank": "HDFCBANK.NS",
+#         "ICICI Bank": "ICICIBANK.NS"
+#     }
+# }
+# --- India Stocks (Expanded) ---
 sector_stocks = {
     "IT": {
         "TCS": "TCS.NS",
-        "Wipro": "WIPRO.NS",
         "Infosys": "INFY.NS",
+        "Wipro": "WIPRO.NS",
         "HCL Technologies": "HCLTECH.NS",
-        "Tech Mahindra": "TECHM.NS"
+        "Tech Mahindra": "TECHM.NS",
+        "LTIMindtree": "LTIM.NS",
+        "Mphasis": "MPHASIS.NS"
     },
+
     "Banking": {
         "HDFC Bank": "HDFCBANK.NS",
-        "ICICI Bank": "ICICIBANK.NS"
+        "ICICI Bank": "ICICIBANK.NS",
+        "State Bank of India": "SBIN.NS",
+        "Axis Bank": "AXISBANK.NS",
+        "Kotak Mahindra Bank": "KOTAKBANK.NS",
+        "IndusInd Bank": "INDUSINDBK.NS"
+    },
+
+    "FMCG": {
+        "Hindustan Unilever": "HINDUNILVR.NS",
+        "ITC": "ITC.NS",
+        "Nestle India": "NESTLEIND.NS",
+        "Britannia": "BRITANNIA.NS",
+        "Dabur": "DABUR.NS"
+    },
+
+    "Energy": {
+        "Reliance Industries": "RELIANCE.NS",
+        "ONGC": "ONGC.NS",
+        "NTPC": "NTPC.NS",
+        "Power Grid": "POWERGRID.NS",
+        "Coal India": "COALINDIA.NS"
+    },
+
+    "Automobile": {
+        "Maruti Suzuki": "MARUTI.NS",
+        "Tata Motors": "TATAMOTORS.NS",
+        "Mahindra & Mahindra": "M&M.NS",
+        "Bajaj Auto": "BAJAJ-AUTO.NS",
+        "Hero MotoCorp": "HEROMOTOCO.NS"
     }
 }
-
 # --- UI ---
 st.title("🇮🇳 India Finance Analysis with ARIMA Forecast")
 st.markdown("Analyze Indian IT & Banking stocks and forecast trends using ARIMA.")

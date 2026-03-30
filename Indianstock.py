@@ -141,10 +141,41 @@ forecast_days = st.sidebar.slider("Forecast Days", 5, 60, 10)
 
 # STOCKS
 stocks = {
-    "TCS":"TCS.NS",
-    "Infosys":"INFY.NS",
-    "Reliance":"RELIANCE.NS",
-    "HDFC Bank":"HDFCBANK.NS"
+
+    # IT
+    "TCS": "TCS.NS",
+    "Infosys": "INFY.NS",
+    "Wipro": "WIPRO.NS",
+    "HCL Tech": "HCLTECH.NS",
+    "Tech Mahindra": "TECHM.NS",
+
+    # Banking
+    "HDFC Bank": "HDFCBANK.NS",
+    "ICICI Bank": "ICICIBANK.NS",
+    "SBI": "SBIN.NS",
+    "Axis Bank": "AXISBANK.NS",
+    "Kotak Bank": "KOTAKBANK.NS",
+
+    # FMCG
+    "ITC": "ITC.NS",
+    "HUL": "HINDUNILVR.NS",
+    "Nestle India": "NESTLEIND.NS",
+    "Britannia": "BRITANNIA.NS",
+    "Dabur": "DABUR.NS",
+
+    # Energy
+    "Reliance": "RELIANCE.NS",
+    "ONGC": "ONGC.NS",
+    "NTPC": "NTPC.NS",
+    "Power Grid": "POWERGRID.NS",
+    "Coal India": "COALINDIA.NS",
+
+    # Automobile
+    "Maruti Suzuki": "MARUTI.NS",
+    "Tata Motors": "TATAMOTORS.NS",
+    "M&M": "M&M.NS",
+    "Bajaj Auto": "BAJAJ-AUTO.NS",
+    "Hero MotoCorp": "HEROMOTOCO.NS"
 }
 
 stock = st.sidebar.selectbox("Select Stock", list(stocks.keys()))

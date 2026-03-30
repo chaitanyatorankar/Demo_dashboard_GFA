@@ -1,6 +1,7 @@
-streamlit 
-pandas 
-numpy 
-yfinance 
-statsmodels 
+streamlit
+pandas
+numpy
+yfinance
+statsmodels
 matplotlib
+plotly

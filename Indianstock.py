@@ -17,43 +17,65 @@ if "start_app" not in st.session_state:
 if "logged_in" not in st.session_state:
     st.session_state["logged_in"] = False
 
-# --- Background Image CSS ---
+# --- Attractive Background + Center UI ---
 st.markdown("""
-    <style>
-    .stApp {
-        background-image: url("https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3");
-        background-size: cover;
-        background-position: center;
-        background-attachment: fixed;
-    }
-    .main-title {
-        font-size: 48px;
-        font-weight: 700;
-        text-align: center;
-        color: white;
-    }
-    .sub-text {
-        font-size: 20px;
-        text-align: center;
-        color: #f1f1f1;
-    }
-    </style>
+<style>
+.stApp {
+    background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)),
+    url("https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+
+.login-box {
+    background-color: rgba(255,255,255,0.1);
+    padding: 40px;
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+    width: 350px;
+    margin: auto;
+    margin-top: 100px;
+    text-align: center;
+}
+
+.main-title {
+    font-size: 48px;
+    font-weight: 700;
+    text-align: center;
+    color: white;
+}
+
+.sub-text {
+    font-size: 20px;
+    text-align: center;
+    color: #f1f1f1;
+}
+</style>
 """, unsafe_allow_html=True)
 
 # =========================
-# 🔐 LOGIN / SIGNUP PAGE
+# 🔐 LOGIN / SIGNUP
 # =========================
 if not st.session_state["logged_in"]:
-    st.title("🔐 Login / Sign Up")
 
-    option = st.radio("Select Option", ["Login", "Sign Up"])
+    st.markdown('<div class="login-box">', unsafe_allow_html=True)
+    st.markdown("## 🔐 Login / Sign Up")
+
+    option = st.radio("", ["Login", "Sign Up"])
 
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
 
+    users = {
+        "admin": "1234",
+        "chaitanya": "finance123",
+        "demo": "demo123"
+    }
+
     if option == "Login":
         if st.button("Login"):
-            if username == "admin" and password == "1234":
+            if username in users and users[username] == password:
                 st.session_state["logged_in"] = True
                 st.success("Login Successful")
                 st.rerun()
@@ -64,6 +86,7 @@ if not st.session_state["logged_in"]:
         if st.button("Sign Up"):
             st.success("Account created! (Demo only)")
 
+    st.markdown('</div>', unsafe_allow_html=True)
     st.stop()
 
 # =========================
@@ -99,12 +122,59 @@ end_date = st.sidebar.date_input("End Date", d.date.today())
 
 forecast_days = st.sidebar.slider("Forecast Days", 5, 60, 10)
 
-# Stationarity Function
-def check_stationarity(timeseries):
-    result = adfuller(timeseries.dropna())
-    return result[1] <= 0.05
+# --- Stock Data (25 Companies) ---
+sector_stocks = {
 
-# ARIMA
+    "IT": {
+        "TCS": "TCS.NS",
+        "Infosys": "INFY.NS",
+        "Wipro": "WIPRO.NS",
+        "HCL Tech": "HCLTECH.NS",
+        "Tech Mahindra": "TECHM.NS"
+    },
+
+    "Banking": {
+        "HDFC Bank": "HDFCBANK.NS",
+        "ICICI Bank": "ICICIBANK.NS",
+        "SBI": "SBIN.NS",
+        "Axis Bank": "AXISBANK.NS",
+        "Kotak Bank": "KOTAKBANK.NS"
+    },
+
+    "FMCG": {
+        "HUL": "HINDUNILVR.NS",
+        "ITC": "ITC.NS",
+        "Nestle": "NESTLEIND.NS",
+        "Britannia": "BRITANNIA.NS",
+        "Dabur": "DABUR.NS"
+    },
+
+    "Energy": {
+        "Reliance": "RELIANCE.NS",
+        "ONGC": "ONGC.NS",
+        "NTPC": "NTPC.NS",
+        "Power Grid": "POWERGRID.NS",
+        "Coal India": "COALINDIA.NS"
+    },
+
+    "Auto": {
+        "Maruti": "MARUTI.NS",
+        "Tata Motors": "TATAMOTORS.NS",
+        "M&M": "M&M.NS",
+        "Bajaj Auto": "BAJAJ-AUTO.NS",
+        "Hero MotoCorp": "HEROMOTOCO.NS"
+    }
+}
+
+sector_choice = st.sidebar.selectbox("Select Sector", list(sector_stocks.keys()))
+stock_choice = st.sidebar.selectbox(
+    "Select Stock",
+    sorted(sector_stocks[sector_choice].keys())
+)
+
+symbol = sector_stocks[sector_choice][stock_choice]
+
+# --- ARIMA Function ---
 def arima_analysis(symbol):
     df = yf.download(symbol, start=start_date, end=end_date)
 
@@ -121,30 +191,24 @@ def arima_analysis(symbol):
 
     return df, forecast, future_dates
 
-stocks = {
-    "TCS": "TCS.NS",
-    "Infosys": "INFY.NS",
-    "Reliance": "RELIANCE.NS",
-    "HDFC Bank": "HDFCBANK.NS"
-}
-
-stock_choice = st.sidebar.selectbox("Select Stock", list(stocks.keys()))
-
-result = arima_analysis(stocks[stock_choice])
+# --- Run ---
+result = arima_analysis(symbol)
 
 if result:
     df, forecast, future_dates = result
 
-    fig, ax = plt.subplots()
-    ax.plot(df.index, df['Close'], label="Actual")
+    fig, ax = plt.subplots(figsize=(10,5))
+    ax.plot(df.index, df['Close'], label="Actual Price")
     ax.plot(future_dates, forecast, linestyle='--', label="Forecast")
+    ax.set_title(f"{stock_choice} Price Forecast")
     ax.legend()
 
     st.pyplot(fig)
 
+    st.subheader("Forecast Data")
     st.dataframe(pd.DataFrame({"Forecast": forecast.values}, index=future_dates))
 
-# Logout Button
+# --- Logout ---
 if st.sidebar.button("Logout"):
     st.session_state["logged_in"] = False
     st.session_state["start_app"] = False

@@ -3,32 +3,81 @@ import pandas as pd
 import numpy as np
 import yfinance as yf
 import datetime as d
+from statsmodels.tsa.stattools import adfuller
 from statsmodels.tsa.arima.model import ARIMA
-import plotly.graph_objects as go
-from streamlit_autorefresh import st_autorefresh
+import matplotlib.pyplot as plt
 
 # --- Page Config ---
-st.set_page_config(page_title="FinForecast Pro", layout="wide")
-
-# --- Auto Refresh ---
-st_autorefresh(interval=60000, key="refresh")
+st.set_page_config(page_title="India Finance Analysis - ARIMA Forecast", layout="wide")
 
 # --- Session State ---
 if "start_app" not in st.session_state:
     st.session_state["start_app"] = False
+
+if "logged_in" not in st.session_state:
+    st.session_state["logged_in"] = False
+
+# --- Background Image CSS ---
+st.markdown("""
+    <style>
+    .stApp {
+        background-image: url("https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+    }
+    .main-title {
+        font-size: 48px;
+        font-weight: 700;
+        text-align: center;
+        color: white;
+    }
+    .sub-text {
+        font-size: 20px;
+        text-align: center;
+        color: #f1f1f1;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+# =========================
+# 🔐 LOGIN / SIGNUP PAGE
+# =========================
+if not st.session_state["logged_in"]:
+    st.title("🔐 Login / Sign Up")
+
+    option = st.radio("Select Option", ["Login", "Sign Up"])
+
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
+
+    if option == "Login":
+        if st.button("Login"):
+            if username == "admin" and password == "1234":
+                st.session_state["logged_in"] = True
+                st.success("Login Successful")
+                st.rerun()
+            else:
+                st.error("Invalid Credentials")
+
+    else:
+        if st.button("Sign Up"):
+            st.success("Account created! (Demo only)")
+
+    st.stop()
 
 # =========================
 # 🏠 HOMEPAGE
 # =========================
 if not st.session_state["start_app"]:
 
-    st.title("🔮 FinForecast Pro")
-    st.write("AI Stock Forecasting Web App for Indian Markets")
+    st.markdown('<div class="main-title">Groww Your Wealth 📈</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sub-text">Analyze Indian Stocks & Forecast Trends using ARIMA Model</div>', unsafe_allow_html=True)
 
     col1, col2, col3 = st.columns(3)
-    col1.metric("NIFTY 50", "22,300")
-    col2.metric("BANKNIFTY", "48,200")
-    col3.metric("SENSEX", "73,500")
+    col1.metric("NIFTY 50", "22,300", "-1.2%")
+    col2.metric("BANKNIFTY", "48,200", "-0.8%")
+    col3.metric("SENSEX", "73,500", "-1.0%")
 
     if st.button("🚀 Get Started"):
         st.session_state["start_app"] = True
@@ -37,109 +86,66 @@ if not st.session_state["start_app"]:
     st.stop()
 
 # =========================
-# 📊 DASHBOARD
+# 📊 MAIN DASHBOARD
 # =========================
-st.title("📊 Stock Analysis Dashboard")
 
-# --- Sidebar ---
-st.sidebar.header("⚙️ Settings")
+st.title("🇮🇳 India Finance Analysis with ARIMA Forecast")
+
+# Sidebar
+st.sidebar.header("⚙️ Customize Analysis")
 
 start_date = st.sidebar.date_input("Start Date", d.date(2022, 1, 1))
 end_date = st.sidebar.date_input("End Date", d.date.today())
-forecast_days = st.sidebar.number_input("Forecast Days", 5, 60, 10)
 
-stocks = {
-    "TCS": "TCS.NS",
-    "Infosys": "INFY.NS",
-    "HDFC Bank": "HDFCBANK.NS"
-}
+forecast_days = st.sidebar.slider("Forecast Days", 5, 60, 10)
 
-stock = st.sidebar.selectbox("Select Stock", list(stocks.keys()))
-symbol = stocks[stock]
+# Stationarity Function
+def check_stationarity(timeseries):
+    result = adfuller(timeseries.dropna())
+    return result[1] <= 0.05
 
-# =========================
-# 📡 LIVE DATA (FIXED)
-# =========================
-live = yf.download(symbol, period="1d", interval="1m")
-
-if not live.empty:
-    try:
-        latest_price = float(live['Close'].iloc[-1])
-        st.metric("📡 Live Price", f"₹{latest_price:.2f}")
-    except:
-        st.warning("⚠️ Live data not available")
-
-# =========================
-# 📊 ARIMA MODEL
-# =========================
-def arima_model(symbol):
+# ARIMA
+def arima_analysis(symbol):
     df = yf.download(symbol, start=start_date, end=end_date)
-    df = df[['Close']].dropna().reset_index()
 
+    if df.empty:
+        st.error("No Data Found")
+        return None
+
+    df = df[['Close']]
     model = ARIMA(df['Close'], order=(5,1,0))
     model_fit = model.fit()
 
     forecast = model_fit.forecast(steps=forecast_days)
+    future_dates = pd.date_range(df.index[-1], periods=forecast_days+1, freq='B')[1:]
 
-    future_dates = pd.date_range(
-        df['Date'].iloc[-1],
-        periods=forecast_days+1,
-        freq='B'
-    )[1:]
+    return df, forecast, future_dates
 
-    forecast_df = pd.DataFrame({
-        "Date": future_dates,
-        "Forecast": forecast
-    })
+stocks = {
+    "TCS": "TCS.NS",
+    "Infosys": "INFY.NS",
+    "Reliance": "RELIANCE.NS",
+    "HDFC Bank": "HDFCBANK.NS"
+}
 
-    return df, forecast_df
+stock_choice = st.sidebar.selectbox("Select Stock", list(stocks.keys()))
 
-df, forecast_df = arima_model(symbol)
+result = arima_analysis(stocks[stock_choice])
 
-# =========================
-# 📈 PLOT
-# =========================
-st.subheader("📈 Stock Forecast")
+if result:
+    df, forecast, future_dates = result
 
-fig = go.Figure()
+    fig, ax = plt.subplots()
+    ax.plot(df.index, df['Close'], label="Actual")
+    ax.plot(future_dates, forecast, linestyle='--', label="Forecast")
+    ax.legend()
 
-fig.add_trace(go.Scatter(
-    x=df['Date'],
-    y=df['Close'],
-    name="Actual Price"
-))
+    st.pyplot(fig)
 
-fig.add_trace(go.Scatter(
-    x=forecast_df['Date'],
-    y=forecast_df['Forecast'],
-    name="Forecast",
-    line=dict(dash='dash')
-))
+    st.dataframe(pd.DataFrame({"Forecast": forecast.values}, index=future_dates))
 
-st.plotly_chart(fig, use_container_width=True)
-
-# =========================
-# 🧠 AI INSIGHT (FIXED)
-# =========================
-st.subheader("🧠 AI Insight")
-
-try:
-    last_forecast = float(forecast_df['Forecast'].iloc[-1])
-    last_actual = float(df['Close'].iloc[-1])
-
-    if last_forecast > last_actual:
-        st.success("📈 Uptrend Expected")
-    else:
-        st.error("📉 Downtrend Expected")
-
-    change = ((last_forecast - last_actual) / last_actual) * 100
-    st.info(f"Expected Change: {change:.2f}%")
-
-except:
-    st.warning("⚠️ Unable to generate AI insight")
-
-# =========================
-# 📊 TABLE
-# =========================
-st.subheader("🔢 Forecast Data")
-st.dataframe(forecast_df)
+# Logout Button
+if st.sidebar.button("Logout"):
+    st.session_state["logged_in"] = False
+    st.session_state["start_app"] = False
+    st.rerun()

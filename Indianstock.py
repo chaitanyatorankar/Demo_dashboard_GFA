@@ -25,31 +25,39 @@ st.markdown("""
     background-position: center;
 }
 
-/* Center Title */
+/* FIXED CENTER TITLE */
 .center-title {
-    position: absolute;
-    top: 80px;
-    left: 50%;
-    transform: translateX(-50%);
+    text-align: center;
+    margin-top: 60px;
+    margin-bottom: 20px;
     background: rgba(255,255,255,0.1);
-    padding: 20px 50px;
-    border-radius: 20px;
-    backdrop-filter: blur(12px);
-    color: white;
-    font-size: 24px;
-    font-weight: bold;
-}
-
-/* Login Card */
-.login-box {
-    background: rgba(255,255,255,0.1);
-    padding: 40px;
+    padding: 15px;
     border-radius: 15px;
     backdrop-filter: blur(10px);
-    width: 360px;
+    color: white;
+    font-size: 26px;
+    font-weight: bold;
+    width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* LOGIN BOX */
+.login-box {
+    background: rgba(255,255,255,0.1);
+    padding: 30px;
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+    width: 400px;
     margin: auto;
-    margin-top: 180px;
     text-align: center;
+}
+
+/* CLEAN ERROR MESSAGE */
+.error-msg {
+    color: #ff4b4b;
+    font-size: 14px;
+    margin-top: 10px;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -59,7 +67,7 @@ st.markdown("""
 # =========================
 if not st.session_state["logged_in"]:
 
-    st.markdown('<div class="center-title">🇮🇳 Welcome to INDIA STOCK ANALYSIS</div>', unsafe_allow_html=True)
+    st.markdown('<div class="center-title">🇮🇳 Welcome to Indian Stock Analysis</div>', unsafe_allow_html=True)
 
     st.markdown('<div class="login-box">', unsafe_allow_html=True)
 
@@ -67,6 +75,7 @@ if not st.session_state["logged_in"]:
 
     username = st.text_input("Username")
 
+    password = ""
     if option != "Forgot Password":
         password = st.text_input("Password", type="password")
 
@@ -76,15 +85,16 @@ if not st.session_state["logged_in"]:
         "demo": "demo123"
     }
 
+    error_message = ""
+
     # LOGIN
     if option == "Login":
         if st.button("Login"):
             if username in users and users[username] == password:
                 st.session_state["logged_in"] = True
-                st.success("Login Successful")
                 st.rerun()
             else:
-                st.error("Invalid Credentials")
+                error_message = "Invalid username or password"
 
     # SIGN UP
     elif option == "Sign Up":
@@ -95,9 +105,13 @@ if not st.session_state["logged_in"]:
     elif option == "Forgot Password":
         if st.button("Recover Password"):
             if username in users:
-                st.info(f"Your password is: {users[username]}")
+                st.info(f"Password: {users[username]}")
             else:
-                st.error("User not found")
+                error_message = "User not found"
+
+    # Custom error (NO RED BOX)
+    if error_message:
+        st.markdown(f'<div class="error-msg">{error_message}</div>', unsafe_allow_html=True)
 
     st.markdown('</div>', unsafe_allow_html=True)
     st.stop()

@@ -7,13 +7,13 @@ from statsmodels.tsa.arima.model import ARIMA
 import plotly.graph_objects as go
 from streamlit_autorefresh import st_autorefresh
 
-# --- Config ---
+# --- Page Config ---
 st.set_page_config(page_title="FinForecast Pro", layout="wide")
 
 # --- Auto Refresh ---
 st_autorefresh(interval=60000, key="refresh")
 
-# --- Session ---
+# --- Session State ---
 if "start_app" not in st.session_state:
     st.session_state["start_app"] = False
 
@@ -23,14 +23,14 @@ if "start_app" not in st.session_state:
 if not st.session_state["start_app"]:
 
     st.title("🔮 FinForecast Pro")
-    st.write("AI Stock Forecasting Web App")
+    st.write("AI Stock Forecasting Web App for Indian Markets")
 
     col1, col2, col3 = st.columns(3)
     col1.metric("NIFTY 50", "22,300")
     col2.metric("BANKNIFTY", "48,200")
     col3.metric("SENSEX", "73,500")
 
-    if st.button("🚀 Start"):
+    if st.button("🚀 Get Started"):
         st.session_state["start_app"] = True
         st.rerun()
 
@@ -39,24 +39,26 @@ if not st.session_state["start_app"]:
 # =========================
 # 📊 DASHBOARD
 # =========================
-st.title("📊 Stock Dashboard")
+st.title("📊 Stock Analysis Dashboard")
 
-# Sidebar
-start_date = st.sidebar.date_input("Start Date", d.date(2022,1,1))
+# --- Sidebar ---
+st.sidebar.header("⚙️ Settings")
+
+start_date = st.sidebar.date_input("Start Date", d.date(2022, 1, 1))
 end_date = st.sidebar.date_input("End Date", d.date.today())
 forecast_days = st.sidebar.number_input("Forecast Days", 5, 60, 10)
 
 stocks = {
     "TCS": "TCS.NS",
     "Infosys": "INFY.NS",
-    "HDFC": "HDFCBANK.NS"
+    "HDFC Bank": "HDFCBANK.NS"
 }
 
-stock = st.sidebar.selectbox("Stock", list(stocks.keys()))
+stock = st.sidebar.selectbox("Select Stock", list(stocks.keys()))
 symbol = stocks[stock]
 
 # =========================
-# 📡 LIVE PRICE FIX
+# 📡 LIVE DATA (FIXED)
 # =========================
 live = yf.download(symbol, period="1d", interval="1m")
 
@@ -65,48 +67,79 @@ if not live.empty:
         latest_price = float(live['Close'].iloc[-1])
         st.metric("📡 Live Price", f"₹{latest_price:.2f}")
     except:
-        st.warning("Live data not available")
+        st.warning("⚠️ Live data not available")
 
 # =========================
-# 📊 ARIMA
+# 📊 ARIMA MODEL
 # =========================
-def model(symbol):
+def arima_model(symbol):
     df = yf.download(symbol, start=start_date, end=end_date)
     df = df[['Close']].dropna().reset_index()
 
     model = ARIMA(df['Close'], order=(5,1,0))
-    fit = model.fit()
+    model_fit = model.fit()
 
-    forecast = fit.forecast(steps=forecast_days)
+    forecast = model_fit.forecast(steps=forecast_days)
 
-    future = pd.date_range(df['Date'].iloc[-1], periods=forecast_days+1, freq='B')[1:]
+    future_dates = pd.date_range(
+        df['Date'].iloc[-1],
+        periods=forecast_days+1,
+        freq='B'
+    )[1:]
 
-    forecast_df = pd.DataFrame({"Date": future, "Forecast": forecast})
+    forecast_df = pd.DataFrame({
+        "Date": future_dates,
+        "Forecast": forecast
+    })
 
     return df, forecast_df
 
-df, forecast_df = model(symbol)
+df, forecast_df = arima_model(symbol)
 
 # =========================
-# 📈 GRAPH
+# 📈 PLOT
 # =========================
+st.subheader("📈 Stock Forecast")
+
 fig = go.Figure()
 
-fig.add_trace(go.Scatter(x=df['Date'], y=df['Close'], name="Actual"))
-fig.add_trace(go.Scatter(x=forecast_df['Date'], y=forecast_df['Forecast'],
-                         name="Forecast", line=dict(dash='dash')))
+fig.add_trace(go.Scatter(
+    x=df['Date'],
+    y=df['Close'],
+    name="Actual Price"
+))
+
+fig.add_trace(go.Scatter(
+    x=forecast_df['Date'],
+    y=forecast_df['Forecast'],
+    name="Forecast",
+    line=dict(dash='dash')
+))
 
 st.plotly_chart(fig, use_container_width=True)
 
 # =========================
-# 🧠 INSIGHT
+# 🧠 AI INSIGHT (FIXED)
 # =========================
-if forecast_df['Forecast'].iloc[-1] > df['Close'].iloc[-1]:
-    st.success("📈 Uptrend Expected")
-else:
-    st.error("📉 Downtrend Expected")
+st.subheader("🧠 AI Insight")
+
+try:
+    last_forecast = float(forecast_df['Forecast'].iloc[-1])
+    last_actual = float(df['Close'].iloc[-1])
+
+    if last_forecast > last_actual:
+        st.success("📈 Uptrend Expected")
+    else:
+        st.error("📉 Downtrend Expected")
+
+    change = ((last_forecast - last_actual) / last_actual) * 100
+    st.info(f"Expected Change: {change:.2f}%")
+
+except:
+    st.warning("⚠️ Unable to generate AI insight")
 
 # =========================
 # 📊 TABLE
 # =========================
+st.subheader("🔢 Forecast Data")
 st.dataframe(forecast_df)

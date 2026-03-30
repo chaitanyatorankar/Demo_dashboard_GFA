@@ -3,5 +3,5 @@ pandas
 numpy
 yfinance
 statsmodels
-matplotlib
 plotly
+streamlit-autorefresh

@@ -16,32 +16,38 @@ if "logged_in" not in st.session_state:
 if "portfolio" not in st.session_state:
     st.session_state["portfolio"] = []
 
-# --- CSS ---
+# --- CSS FIXED ---
 st.markdown("""
 <style>
 .stApp {
     background: linear-gradient(rgba(0,0,0,0.85), rgba(0,0,0,0.85)),
     url("https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f");
     background-size: cover;
+    background-attachment: fixed;
+    overflow-x: hidden;
 }
 .title {text-align:center;color:white;font-size:44px;margin-top:40px;}
 .subtitle {text-align:center;color:#aaa;margin-bottom:30px;}
+
 .card {
     background: rgba(255,255,255,0.08);
     padding:25px;border-radius:18px;text-align:center;color:white;
     transition:0.3s;
 }
 .card:hover {transform: scale(1.05);background: rgba(255,255,255,0.15);}
+
 .login-box {
     background: rgba(255,255,255,0.1);
     padding:35px;border-radius:20px;
     backdrop-filter: blur(15px);
     width:350px;margin:auto;margin-top:40px;
 }
+
 .stButton>button {
     background: linear-gradient(45deg,#00ffcc,#0099ff);
     color:black;border-radius:10px;font-weight:bold;
 }
+
 .about {
     background: rgba(255,255,255,0.05);
     padding:25px;border-radius:15px;color:#ddd;margin-top:30px;
@@ -54,7 +60,7 @@ st.markdown("""
 # =========================
 if not st.session_state["logged_in"]:
 
-    st.markdown('<div class="title">🚀 Future Stock Ai</div>', unsafe_allow_html=True)
+    st.markdown('<div class="title">🚀 Future Stock AI</div>', unsafe_allow_html=True)
     st.markdown('<div class="login-box">', unsafe_allow_html=True)
 
     option = st.radio("", ["Login", "Sign Up", "Forgot Password"])
@@ -132,7 +138,6 @@ start_date = st.sidebar.date_input("Start Date", d.date(2022,1,1))
 end_date = st.sidebar.date_input("End Date", d.date.today())
 forecast_days = st.sidebar.slider("Forecast Days", 5, 90, 30)
 
-# STOCKS
 sector_stocks = {
     "IT": {
         "TCS":"TCS.NS","Infosys":"INFY.NS","Wipro":"WIPRO.NS",
@@ -186,37 +191,43 @@ sector_stocks = {
     }
 }
 
-
 sector = st.sidebar.selectbox("Sector", list(sector_stocks.keys()))
 stock = st.sidebar.selectbox("Stock", list(sector_stocks[sector].keys()))
 symbol = sector_stocks[sector][stock]
 
-df = yf.download(symbol, start=start_date, end=end_date)
+# ✅ SAFE DATA LOAD
+with st.spinner("Fetching stock data..."):
+    df = yf.download(symbol, start=start_date, end=end_date)
 
-if not df.empty:
-    df = df[['Close']]
+if df.empty:
+    st.error("No data found")
+    st.stop()
 
-    model = ARIMA(df['Close'], order=(5,1,0))
-    model_fit = model.fit()
-    forecast = model_fit.forecast(steps=forecast_days)
+df = df[['Close']]
 
-    future_dates = pd.date_range(df.index[-1], periods=forecast_days+1, freq='B')[1:]
+# MODEL
+model = ARIMA(df['Close'], order=(5,1,0))
+model_fit = model.fit()
+forecast = model_fit.forecast(steps=forecast_days)
 
-    fig, ax = plt.subplots()
-    ax.plot(df.index, df['Close'], label="Actual")
-    ax.plot(future_dates, forecast, '--', label="Forecast")
-    ax.legend()
+future_dates = pd.date_range(df.index[-1], periods=forecast_days+1, freq='B')[1:]
 
-    st.pyplot(fig)
+# GRAPH FIXED
+fig, ax = plt.subplots(figsize=(10,5))
+ax.plot(df.index, df['Close'], label="Actual")
+ax.plot(future_dates, forecast, '--', label="Forecast")
+ax.legend()
+st.pyplot(fig)
 
-    st.dataframe(pd.DataFrame({"Forecast": forecast.values}, index=future_dates))
+st.dataframe(pd.DataFrame({"Forecast": forecast.values}, index=future_dates))
 
-    # 🤖 SIGNAL
-    st.subheader("📢 AI Signal")
-    if forecast.iloc[-1] > df['Close'].iloc[-1]:
-        st.success("🟢 BUY")
-    else:
-        st.error("🔴 SELL")
+# 🤖 AI SIGNAL FIXED UI
+st.markdown("## 📢 AI Signal")
+
+if forecast.iloc[-1] > df['Close'].iloc[-1]:
+    st.markdown("<div style='padding:15px;background:#0f5132;border-radius:10px;color:white;'>🟢 BUY Signal</div>", unsafe_allow_html=True)
+else:
+    st.markdown("<div style='padding:15px;background:#842029;border-radius:10px;color:white;'>🔴 SELL Signal</div>", unsafe_allow_html=True)
 
 # 💼 PORTFOLIO
 st.subheader("💼 Portfolio")

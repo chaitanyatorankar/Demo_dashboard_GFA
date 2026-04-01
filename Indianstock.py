@@ -4,8 +4,21 @@ import yfinance as yf
 import datetime as d
 from statsmodels.tsa.arima.model import ARIMA
 import matplotlib.pyplot as plt
+import sqlite3
 
 st.set_page_config(page_title="Stock Sense Analytics", layout="wide")
+
+# ---------------- DATABASE ----------------
+conn = sqlite3.connect("users.db", check_same_thread=False)
+c = conn.cursor()
+
+c.execute("""
+CREATE TABLE IF NOT EXISTS users(
+    username TEXT PRIMARY KEY,
+    password TEXT
+)
+""")
+conn.commit()
 
 # ---------------- SESSION ----------------
 if "logged_in" not in st.session_state:
@@ -51,7 +64,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ---------------- NAVBAR ----------------
-c1, c2, c3 = st.columns(3)
+c1, c2, c3, c4 = st.columns(4)
 
 with c1:
     if st.button("🏠 Home"):
@@ -68,9 +81,13 @@ with c3:
     else:
         st.success("✅ Logged In")
 
+with c4:
+    if not st.session_state.logged_in:
+        if st.button("📝 Signup"):
+            st.session_state.page = "signup"
+
 # ---------------- HOME ----------------
 if st.session_state.page == "home" and not st.session_state.logged_in:
-
     st.markdown('<div class="title">🚀 Stock Sense Analytics</div>', unsafe_allow_html=True)
     st.markdown('<div class="subtitle">Smart AI-Based Stock Prediction Platform</div>', unsafe_allow_html=True)
 
@@ -108,19 +125,15 @@ if st.session_state.page == "home" and not st.session_state.logged_in:
 
 # ---------------- ABOUT ----------------
 if st.session_state.page == "about" and not st.session_state.logged_in:
-
     st.markdown('<div class="title">ℹ️ About</div>', unsafe_allow_html=True)
 
     st.markdown("""
     ### 📊 Stock Sense Analytics
-
     - Live Indian Market Data  
     - Forecast using ARIMA Model  
     - Interactive Dashboard  
-
     ### 🧠 Tech:
     Python, Streamlit, Pandas, yFinance  
-
     👨‍💻 Developed by Chaitanya
     """)
 
@@ -128,20 +141,16 @@ if st.session_state.page == "about" and not st.session_state.logged_in:
 
 # ---------------- LOGIN ----------------
 if st.session_state.page == "login" and not st.session_state.logged_in:
-
     st.markdown('<div class="title">🔐 Login</div>', unsafe_allow_html=True)
 
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
 
-    users = {
-        "admin": "1234",
-        "chaitanya": "123",
-        "user1": "pass1"
-    }
-
     if st.button("Login"):
-        if username in users and users[username] == password:
+        c.execute("SELECT * FROM users WHERE username=? AND password=?", (username, password))
+        result = c.fetchone()
+
+        if result:
             st.session_state.logged_in = True
             st.session_state.page = "dashboard"
             st.success("Login Successful ✅")
@@ -151,100 +160,72 @@ if st.session_state.page == "login" and not st.session_state.logged_in:
 
     st.stop()
 
+# ---------------- SIGNUP ----------------
+if st.session_state.page == "signup" and not st.session_state.logged_in:
+    st.markdown('<div class="title">📝 Signup</div>', unsafe_allow_html=True)
+
+    new_user = st.text_input("Create Username")
+    new_pass = st.text_input("Create Password", type="password")
+
+    if st.button("Signup"):
+        try:
+            c.execute("INSERT INTO users VALUES (?, ?)", (new_user, new_pass))
+            conn.commit()
+            st.success("Account Created ✅ Now Login")
+        except:
+            st.error("Username already exists ❌")
+
+    st.stop()
+
 # =========================
 # 📊 DASHBOARD (AFTER LOGIN)
 # =========================
-st.title("📊 Stock Dashboard")
+if st.session_state.logged_in:
 
-st.sidebar.header("Settings")
+    st.title("📊 Stock Dashboard")
 
-start_date = st.sidebar.date_input("Start Date", d.date(2022,1,1))
-end_date = st.sidebar.date_input("End Date", d.date.today())
+    st.sidebar.header("Settings")
 
-forecast_days = st.sidebar.slider("Forecast Days", 5, 90, 30)
+    start_date = st.sidebar.date_input("Start Date", d.date(2022,1,1))
+    end_date = st.sidebar.date_input("End Date", d.date.today())
 
-# ✅ BIGGER STOCK LIST (15+ each)
-sector_stocks = {
-    "IT": {
-        "TCS":"TCS.NS","Infosys":"INFY.NS","Wipro":"WIPRO.NS",
-        "HCL Tech":"HCLTECH.NS","Tech Mahindra":"TECHM.NS",
-        "LTIMindtree":"LTIM.NS","Mphasis":"MPHASIS.NS",
-        "Coforge":"COFORGE.NS","L&T Tech":"LTTS.NS",
-        "Zensar":"ZENSARTECH.NS","Persistent":"PERSISTENT.NS",
-        "KPIT":"KPITTECH.NS","Birlasoft":"BSOFT.NS",
-        "Tanla":"TANLA.NS","Route Mobile":"ROUTE.NS"
-    },
+    forecast_days = st.sidebar.slider("Forecast Days", 5, 90, 30)
 
-    "Banking": {
-        "HDFC Bank":"HDFCBANK.NS","ICICI":"ICICIBANK.NS","SBI":"SBIN.NS",
-        "Axis":"AXISBANK.NS","Kotak":"KOTAKBANK.NS",
-        "IndusInd":"INDUSINDBK.NS","Yes Bank":"YESBANK.NS",
-        "IDFC First":"IDFCFIRSTB.NS","Bandhan":"BANDHANBNK.NS",
-        "PNB":"PNB.NS","Bank of Baroda":"BANKBARODA.NS",
-        "Canara":"CANBK.NS","Union Bank":"UNIONBANK.NS",
-        "RBL":"RBLBANK.NS","Federal":"FEDERALBNK.NS"
-    },
-
-    "FMCG": {
-        "ITC":"ITC.NS","HUL":"HINDUNILVR.NS","Nestle":"NESTLEIND.NS",
-        "Britannia":"BRITANNIA.NS","Dabur":"DABUR.NS",
-        "Godrej":"GODREJCP.NS","Marico":"MARICO.NS",
-        "Colgate":"COLPAL.NS","Tata Consumer":"TATACONSUM.NS",
-        "UBL":"UBL.NS","Emami":"EMAMILTD.NS",
-        "Radico":"RADICO.NS","VBL":"VBL.NS",
-        "Balrampur":"BALRAMCHIN.NS","Zydus Wellness":"ZYDUSWELL.NS"
-    },
-
-    "Energy": {
-        "Reliance":"RELIANCE.NS","ONGC":"ONGC.NS","NTPC":"NTPC.NS",
-        "Power Grid":"POWERGRID.NS","Coal India":"COALINDIA.NS",
-        "BPCL":"BPCL.NS","HPCL":"HPCL.NS",
-        "IOC":"IOC.NS","Adani Green":"ADANIGREEN.NS",
-        "Adani Power":"ADANIPOWER.NS","Tata Power":"TATAPOWER.NS",
-        "Torrent":"TORNTPOWER.NS","NHPC":"NHPC.NS",
-        "Suzlon":"SUZLON.NS","GAIL":"GAIL.NS"
-    },
-
-    "Auto": {
-        "Maruti":"MARUTI.NS","Tata Motors":"TATAMOTORS.NS",
-        "M&M":"M&M.NS","Bajaj Auto":"BAJAJ-AUTO.NS",
-        "Hero":"HEROMOTOCO.NS","Ashok Leyland":"ASHOKLEY.NS",
-        "TVS":"TVSMOTOR.NS","Eicher":"EICHERMOT.NS",
-        "Escorts":"ESCORTS.NS","Force Motors":"FORCEMOT.NS",
-        "Sona BLW":"SONACOMS.NS","Exide":"EXIDEIND.NS",
-        "Amara Raja":"AMARAJABAT.NS","Bosch":"BOSCHLTD.NS",
-        "MRF":"MRF.NS"
+    sector_stocks = {
+        "IT": {"TCS":"TCS.NS","Infosys":"INFY.NS","Wipro":"WIPRO.NS"},
+        "Banking": {"HDFC Bank":"HDFCBANK.NS","ICICI":"ICICIBANK.NS","SBI":"SBIN.NS"},
+        "FMCG": {"ITC":"ITC.NS","HUL":"HINDUNILVR.NS"},
+        "Energy": {"Reliance":"RELIANCE.NS","ONGC":"ONGC.NS"},
+        "Auto": {"Maruti":"MARUTI.NS","Tata Motors":"TATAMOTORS.NS"}
     }
-}
 
-sector = st.sidebar.selectbox("Sector", list(sector_stocks.keys()))
-stock = st.sidebar.selectbox("Stock", list(sector_stocks[sector].keys()))
-symbol = sector_stocks[sector][stock]
+    sector = st.sidebar.selectbox("Sector", list(sector_stocks.keys()))
+    stock = st.sidebar.selectbox("Stock", list(sector_stocks[sector].keys()))
+    symbol = sector_stocks[sector][stock]
 
-df = yf.download(symbol, start=start_date, end=end_date)
+    df = yf.download(symbol, start=start_date, end=end_date)
 
-if not df.empty:
-    df = df[['Close']]
+    if not df.empty:
+        df = df[['Close']]
 
-    model = ARIMA(df['Close'], order=(5,1,0))
-    model_fit = model.fit()
+        model = ARIMA(df['Close'], order=(5,1,0))
+        model_fit = model.fit()
 
-    forecast = model_fit.forecast(steps=forecast_days)
+        forecast = model_fit.forecast(steps=forecast_days)
 
-    future_dates = pd.date_range(df.index[-1], periods=forecast_days+1, freq='B')[1:]
+        future_dates = pd.date_range(df.index[-1], periods=forecast_days+1, freq='B')[1:]
 
-    fig, ax = plt.subplots(figsize=(10,5))
-    ax.plot(df.index, df['Close'], label="Actual")
-    ax.plot(future_dates, forecast, '--', label="Forecast")
+        fig, ax = plt.subplots(figsize=(10,5))
+        ax.plot(df.index, df['Close'], label="Actual")
+        ax.plot(future_dates, forecast, '--', label="Forecast")
 
-    ax.set_title(f"{stock} Forecast")
-    ax.legend()
+        ax.set_title(f"{stock} Forecast")
+        ax.legend()
 
-    st.pyplot(fig)
+        st.pyplot(fig)
 
-    st.dataframe(pd.DataFrame({"Forecast": forecast.values}, index=future_dates))
+        st.dataframe(pd.DataFrame({"Forecast": forecast.values}, index=future_dates))
 
-    # -------- LOGOUT --------
     if st.sidebar.button("Logout"):
         st.session_state.logged_in = False
         st.session_state.page = "home"

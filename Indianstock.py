@@ -8,10 +8,14 @@ import matplotlib.pyplot as plt
 st.set_page_config(page_title="Stock Sense Analytics", layout="wide")
 
 # ---------------- SESSION ----------------
+if "start_app" not in st.session_state:
+    st.session_state["start_app"] = False
 if "logged_in" not in st.session_state:
-    st.session_state.logged_in = False
+    st.session_state["logged_in"] = False
+if "portfolio" not in st.session_state:
+    st.session_state["portfolio"] = []
 if "page" not in st.session_state:
-    st.session_state.page = "home"
+    st.session_state["page"] = "Home"
 
 # ---------------- CSS ----------------
 st.markdown("""

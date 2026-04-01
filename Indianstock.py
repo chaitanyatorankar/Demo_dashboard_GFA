@@ -191,7 +191,7 @@ if st.session_state.logged_in:
 
     forecast_days = st.sidebar.slider("Forecast Days", 5, 90, 30)
 
-  sector_stocks = {
+sector_stocks = {
     "IT": {
         "TCS":"TCS.NS","Infosys":"INFY.NS","Wipro":"WIPRO.NS",
         "HCL Tech":"HCLTECH.NS","Tech Mahindra":"TECHM.NS",
@@ -244,32 +244,32 @@ if st.session_state.logged_in:
     }
 }
 
-    sector = st.sidebar.selectbox("Sector", list(sector_stocks.keys()))
-    stock = st.sidebar.selectbox("Stock", list(sector_stocks[sector].keys()))
-    symbol = sector_stocks[sector][stock]
+sector = st.sidebar.selectbox("Sector", list(sector_stocks.keys()))
+stock = st.sidebar.selectbox("Stock", list(sector_stocks[sector].keys()))
+symbol = sector_stocks[sector][stock]
 
-    df = yf.download(symbol, start=start_date, end=end_date)
+df = yf.download(symbol, start=start_date, end=end_date)
 
-    if not df.empty:
-        df = df[['Close']]
+if not df.empty:
+    df = df[['Close']]
 
-        model = ARIMA(df['Close'], order=(5,1,0))
-        model_fit = model.fit()
+    model = ARIMA(df['Close'], order=(5,1,0))
+    model_fit = model.fit()
 
-        forecast = model_fit.forecast(steps=forecast_days)
+    forecast = model_fit.forecast(steps=forecast_days)
 
-        future_dates = pd.date_range(df.index[-1], periods=forecast_days+1, freq='B')[1:]
+    future_dates = pd.date_range(df.index[-1], periods=forecast_days+1, freq='B')[1:]
 
-        fig, ax = plt.subplots(figsize=(10,5))
-        ax.plot(df.index, df['Close'], label="Actual")
-        ax.plot(future_dates, forecast, '--', label="Forecast")
+    fig, ax = plt.subplots(figsize=(10,5))
+    ax.plot(df.index, df['Close'], label="Actual")
+    ax.plot(future_dates, forecast, '--', label="Forecast")
 
-        ax.set_title(f"{stock} Forecast")
-        ax.legend()
+    ax.set_title(f"{stock} Forecast")
+    ax.legend()
 
-        st.pyplot(fig)
+    st.pyplot(fig)
 
-        st.dataframe(pd.DataFrame({"Forecast": forecast.values}, index=future_dates))
+    st.dataframe(pd.DataFrame({"Forecast": forecast.values}, index=future_dates))
 
     if st.sidebar.button("Logout"):
         st.session_state.logged_in = False

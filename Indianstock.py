@@ -134,8 +134,14 @@ if st.session_state.page == "login" and not st.session_state.logged_in:
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
 
+    users = {
+        "admin": "1234",
+        "chaitanya": "123",
+        "user1": "pass1"
+    }
+
     if st.button("Login"):
-        if username == "admin" and password == "1234":
+        if username in users and users[username] == password:
             st.session_state.logged_in = True
             st.session_state.page = "dashboard"
             st.success("Login Successful ✅")

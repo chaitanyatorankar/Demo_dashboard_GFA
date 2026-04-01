@@ -218,4 +218,5 @@ if not df.empty:
 if st.sidebar.button("Logout"):
     st.session_state["logged_in"] = False
     st.session_state["start_app"] = False
+    st.session_state["page"] = "Home"
     st.rerun()

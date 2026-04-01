@@ -21,39 +21,46 @@ st.markdown("""
     url("https://images.unsplash.com/photo-1504384308090-c894fdcc538d");
     background-size: cover;
 }
-.title {text-align:center;color:white;font-size:50px;font-weight:700;}
-.subtitle {text-align:center;color:#bbb;margin-bottom:30px;}
+.title {
+    text-align:center;
+    color:white;
+    font-size:50px;
+    font-weight:700;
+}
+.subtitle {
+    text-align:center;
+    color:#bbb;
+    margin-bottom:30px;
+}
 .card {
     background: rgba(255,255,255,0.08);
-    padding:25px;border-radius:18px;text-align:center;color:white;
+    padding:25px;
+    border-radius:18px;
+    text-align:center;
+    color:white;
+    backdrop-filter: blur(10px);
 }
 .box {
     background: rgba(255,255,255,0.1);
-    padding:25px;border-radius:18px;color:white;
+    padding:25px;
+    border-radius:18px;
+    color:white;
+    backdrop-filter: blur(15px);
 }
 </style>
 """, unsafe_allow_html=True)
 
 # ---------------- NAVBAR ----------------
-col1, col2, col3 = st.columns(3)
-
-with col1:
+c1, c2, c3 = st.columns(3)
+with c1:
     if st.button("🏠 Home"):
         st.session_state.page = "home"
-
-with col2:
+with c2:
     if st.button("ℹ️ About"):
         st.session_state.page = "about"
-
-with col3:
-    if not st.session_state.logged_in:
-        if st.button("🔐 Login"):
-            st.session_state.page = "login"
-    else:
-        if st.button("🚪 Logout"):
-            st.session_state.logged_in = False
-            st.session_state.page = "home"
-            st.rerun()
+with c3:
+    if st.button("🔐 Login"):
+        st.session_state.page = "login"
 
 # ---------------- HOME ----------------
 if st.session_state.page == "home" and not st.session_state.logged_in:
@@ -62,9 +69,34 @@ if st.session_state.page == "home" and not st.session_state.logged_in:
     st.markdown('<div class="subtitle">Smart AI-Based Stock Prediction Platform</div>', unsafe_allow_html=True)
 
     c1, c2, c3 = st.columns(3)
-    c1.markdown('<div class="card">📊<br><b>Analyze Stocks</b></div>', unsafe_allow_html=True)
-    c2.markdown('<div class="card">🔮<br><b>Forecast Prices</b></div>', unsafe_allow_html=True)
-    c3.markdown('<div class="card">⚡<br><b>Live Data</b></div>', unsafe_allow_html=True)
+    c1.markdown('<div class="card">📊<br><b>Analyze Stocks</b><br>Deep insights</div>', unsafe_allow_html=True)
+    c2.markdown('<div class="card">🔮<br><b>Forecast Prices</b><br>AI prediction</div>', unsafe_allow_html=True)
+    c3.markdown('<div class="card">⚡<br><b>Live Data</b><br>Real-time</div>', unsafe_allow_html=True)
+
+    st.markdown("### 📍 Why Use This App?")
+    st.write("""
+    ✔ Real-time Indian stock market  
+    ✔ AI forecasting (ARIMA)  
+    ✔ Sector analysis  
+    ✔ Beginner friendly  
+    """)
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.markdown('<div class="box"><h3>About This App</h3>', unsafe_allow_html=True)
+        st.write("""
+        ✔ Live Market Data  
+        ✔ ARIMA Forecasting  
+        ✔ Sector Analysis  
+        👨‍💻 By Chaitanya Torankar  
+        """)
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    with col2:
+        st.markdown('<div class="box"><h3>Login to Continue</h3>', unsafe_allow_html=True)
+        st.write("Go to Login page to access dashboard")
+        st.markdown('</div>', unsafe_allow_html=True)
 
     st.stop()
 
@@ -73,77 +105,118 @@ if st.session_state.page == "about" and not st.session_state.logged_in:
 
     st.markdown('<div class="title">ℹ️ About</div>', unsafe_allow_html=True)
 
-    st.write("""
-    Stock Sense Analytics helps analyze Indian stocks using AI.
-    - Live Data
-    - ARIMA Forecast
-    - Sector Analysis
+    st.markdown("""
+    ### 📊 Stock Sense Analytics
+
+    - Live Indian Market Data  
+    - Forecast using ARIMA Model  
+    - Interactive Dashboard  
+
+    ### 🧠 Tech:
+    Python, Streamlit, Pandas, yFinance  
+
+    👨‍💻 Developed by Chaitanya
     """)
 
     st.stop()
 
-# ---------------- LOGIN ----------------
-if st.session_state.page == "login" and not st.session_state.logged_in:
+# =========================
+# 📊 DASHBOARD
+# =========================
 
-    st.markdown('<div class="title">🔐 Login</div>', unsafe_allow_html=True)
+st.title("📊 Stock Dashboard")
 
-    users = {"admin":"1234", "chaitanya":"finance123"}
+st.sidebar.header("Settings")
 
-    username = st.text_input("Username").strip().lower()
-    password = st.text_input("Password", type="password").strip()
+start_date = st.sidebar.date_input("Start Date", d.date(2022,1,1))
+end_date = st.sidebar.date_input("End Date", d.date.today())
 
-    st.info("Demo: chaitanya / finance123")
+forecast_days = st.sidebar.slider("Forecast Days", 5, 90, 30)
 
-    if st.button("Login"):
-        if username in users and users[username] == password:
-            st.session_state.logged_in = True
-            st.success("Login Successful ✅")
-            st.session_state.page = "dashboard"
-            st.rerun()
-        else:
-            st.error("Invalid Credentials")
+# ✅ BIGGER STOCK LIST (15+ each)
+sector_stocks = {
+    "IT": {
+        "TCS":"TCS.NS","Infosys":"INFY.NS","Wipro":"WIPRO.NS",
+        "HCL Tech":"HCLTECH.NS","Tech Mahindra":"TECHM.NS",
+        "LTIMindtree":"LTIM.NS","Mphasis":"MPHASIS.NS",
+        "Coforge":"COFORGE.NS","L&T Tech":"LTTS.NS",
+        "Zensar":"ZENSARTECH.NS","Persistent":"PERSISTENT.NS",
+        "KPIT":"KPITTECH.NS","Birlasoft":"BSOFT.NS",
+        "Tanla":"TANLA.NS","Route Mobile":"ROUTE.NS"
+    },
 
-    st.stop()
+    "Banking": {
+        "HDFC Bank":"HDFCBANK.NS","ICICI":"ICICIBANK.NS","SBI":"SBIN.NS",
+        "Axis":"AXISBANK.NS","Kotak":"KOTAKBANK.NS",
+        "IndusInd":"INDUSINDBK.NS","Yes Bank":"YESBANK.NS",
+        "IDFC First":"IDFCFIRSTB.NS","Bandhan":"BANDHANBNK.NS",
+        "PNB":"PNB.NS","Bank of Baroda":"BANKBARODA.NS",
+        "Canara":"CANBK.NS","Union Bank":"UNIONBANK.NS",
+        "RBL":"RBLBANK.NS","Federal":"FEDERALBNK.NS"
+    },
 
-# ---------------- DASHBOARD (ONLY AFTER LOGIN) ----------------
-if st.session_state.logged_in:
+    "FMCG": {
+        "ITC":"ITC.NS","HUL":"HINDUNILVR.NS","Nestle":"NESTLEIND.NS",
+        "Britannia":"BRITANNIA.NS","Dabur":"DABUR.NS",
+        "Godrej":"GODREJCP.NS","Marico":"MARICO.NS",
+        "Colgate":"COLPAL.NS","Tata Consumer":"TATACONSUM.NS",
+        "UBL":"UBL.NS","Emami":"EMAMILTD.NS",
+        "Radico":"RADICO.NS","VBL":"VBL.NS",
+        "Balrampur":"BALRAMCHIN.NS","Zydus Wellness":"ZYDUSWELL.NS"
+    },
 
-    st.markdown('<div class="title">📊 Stock Dashboard</div>', unsafe_allow_html=True)
+    "Energy": {
+        "Reliance":"RELIANCE.NS","ONGC":"ONGC.NS","NTPC":"NTPC.NS",
+        "Power Grid":"POWERGRID.NS","Coal India":"COALINDIA.NS",
+        "BPCL":"BPCL.NS","HPCL":"HPCL.NS",
+        "IOC":"IOC.NS","Adani Green":"ADANIGREEN.NS",
+        "Adani Power":"ADANIPOWER.NS","Tata Power":"TATAPOWER.NS",
+        "Torrent":"TORNTPOWER.NS","NHPC":"NHPC.NS",
+        "Suzlon":"SUZLON.NS","GAIL":"GAIL.NS"
+    },
 
-    st.sidebar.header("Settings")
-
-    start_date = st.sidebar.date_input("Start Date", d.date(2022,1,1))
-    end_date = st.sidebar.date_input("End Date", d.date.today())
-
-    forecast_days = st.sidebar.slider("Forecast Days", 5, 90, 30)
-
-    sector_stocks = {
-        "IT": {"TCS":"TCS.NS","Infosys":"INFY.NS"},
-        "Banking": {"HDFC Bank":"HDFCBANK.NS","ICICI":"ICICIBANK.NS"},
-        "Auto": {"Tata Motors":"TATAMOTORS.NS","Maruti":"MARUTI.NS"}
+    "Auto": {
+        "Maruti":"MARUTI.NS","Tata Motors":"TATAMOTORS.NS",
+        "M&M":"M&M.NS","Bajaj Auto":"BAJAJ-AUTO.NS",
+        "Hero":"HEROMOTOCO.NS","Ashok Leyland":"ASHOKLEY.NS",
+        "TVS":"TVSMOTOR.NS","Eicher":"EICHERMOT.NS",
+        "Escorts":"ESCORTS.NS","Force Motors":"FORCEMOT.NS",
+        "Sona BLW":"SONACOMS.NS","Exide":"EXIDEIND.NS",
+        "Amara Raja":"AMARAJABAT.NS","Bosch":"BOSCHLTD.NS",
+        "MRF":"MRF.NS"
     }
+}
 
-    sector = st.sidebar.selectbox("Sector", list(sector_stocks.keys()))
-    stock = st.sidebar.selectbox("Stock", list(sector_stocks[sector].keys()))
-    symbol = sector_stocks[sector][stock]
+sector = st.sidebar.selectbox("Sector", list(sector_stocks.keys()))
+stock = st.sidebar.selectbox("Stock", list(sector_stocks[sector].keys()))
+symbol = sector_stocks[sector][stock]
 
-    df = yf.download(symbol, start=start_date, end=end_date)
+df = yf.download(symbol, start=start_date, end=end_date)
 
-    if not df.empty:
-        df = df[['Close']]
+if not df.empty:
+    df = df[['Close']]
 
-        model = ARIMA(df['Close'], order=(5,1,0))
-        model_fit = model.fit()
+    model = ARIMA(df['Close'], order=(5,1,0))
+    model_fit = model.fit()
 
-        forecast = model_fit.forecast(steps=forecast_days)
+    forecast = model_fit.forecast(steps=forecast_days)
 
-        future_dates = pd.date_range(df.index[-1], periods=forecast_days+1, freq='B')[1:]
+    future_dates = pd.date_range(df.index[-1], periods=forecast_days+1, freq='B')[1:]
 
-        fig, ax = plt.subplots()
-        ax.plot(df.index, df['Close'], label="Actual")
-        ax.plot(future_dates, forecast, '--', label="Forecast")
-        ax.legend()
+    fig, ax = plt.subplots(figsize=(10,5))
+    ax.plot(df.index, df['Close'], label="Actual")
+    ax.plot(future_dates, forecast, '--', label="Forecast")
 
-        st.pyplot(fig)
+    ax.set_title(f"{stock} Forecast")
+    ax.legend()
 
-        st.dataframe(pd.DataFrame({"Forecast": forecast.values}, index=future_dates))
+    st.pyplot(fig)
+
+    st.dataframe(pd.DataFrame({"Forecast": forecast.values}, index=future_dates))
+
+# LOGOUT
+if st.sidebar.button("Logout"):
+    st.session_state["logged_in"] = False
+    st.session_state["start_app"] = False
+    st.session_state["page"] = "Home"
+    st.rerun()

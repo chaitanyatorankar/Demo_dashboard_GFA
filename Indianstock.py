@@ -75,7 +75,7 @@ st.markdown("""
 # =========================
 if not st.session_state["logged_in"]:
 
-    st.markdown('<div class="title">🚀 Indian Stock Analysis Platform</div>', unsafe_allow_html=True)
+    st.markdown('<div class="title">🚀 Future Stocks Ai</div>', unsafe_allow_html=True)
 
     st.markdown('<div class="login-box">', unsafe_allow_html=True)
 

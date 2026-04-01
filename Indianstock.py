@@ -153,62 +153,101 @@ if not st.session_state["start_app"]:
 
     st.stop()
 
-# ================= DASHBOARD =================
+# =========================
+# 📊 DASHBOARD
+# =========================
+
 st.title("📊 Stock Dashboard")
 
-start_date = st.sidebar.date_input("Start Date", d.date(2022, 1, 1))
+st.sidebar.header("Settings")
+
+start_date = st.sidebar.date_input("Start Date", d.date(2022,1,1))
 end_date = st.sidebar.date_input("End Date", d.date.today())
+
 forecast_days = st.sidebar.slider("Forecast Days", 5, 90, 30)
 
-symbol = st.sidebar.text_input("Enter Stock Symbol (e.g., TCS.NS)", "TCS.NS")
+# ✅ BIGGER STOCK LIST (15+ each)
+sector_stocks = {
+    "IT": {
+        "TCS":"TCS.NS","Infosys":"INFY.NS","Wipro":"WIPRO.NS",
+        "HCL Tech":"HCLTECH.NS","Tech Mahindra":"TECHM.NS",
+        "LTIMindtree":"LTIM.NS","Mphasis":"MPHASIS.NS",
+        "Coforge":"COFORGE.NS","L&T Tech":"LTTS.NS",
+        "Zensar":"ZENSARTECH.NS","Persistent":"PERSISTENT.NS",
+        "KPIT":"KPITTECH.NS","Birlasoft":"BSOFT.NS",
+        "Tanla":"TANLA.NS","Route Mobile":"ROUTE.NS"
+    },
 
-df = yf.download(symbol, start=start_date, end=end_date, progress=False)
+    "Banking": {
+        "HDFC Bank":"HDFCBANK.NS","ICICI":"ICICIBANK.NS","SBI":"SBIN.NS",
+        "Axis":"AXISBANK.NS","Kotak":"KOTAKBANK.NS",
+        "IndusInd":"INDUSINDBK.NS","Yes Bank":"YESBANK.NS",
+        "IDFC First":"IDFCFIRSTB.NS","Bandhan":"BANDHANBNK.NS",
+        "PNB":"PNB.NS","Bank of Baroda":"BANKBARODA.NS",
+        "Canara":"CANBK.NS","Union Bank":"UNIONBANK.NS",
+        "RBL":"RBLBANK.NS","Federal":"FEDERALBNK.NS"
+    },
+
+    "FMCG": {
+        "ITC":"ITC.NS","HUL":"HINDUNILVR.NS","Nestle":"NESTLEIND.NS",
+        "Britannia":"BRITANNIA.NS","Dabur":"DABUR.NS",
+        "Godrej":"GODREJCP.NS","Marico":"MARICO.NS",
+        "Colgate":"COLPAL.NS","Tata Consumer":"TATACONSUM.NS",
+        "UBL":"UBL.NS","Emami":"EMAMILTD.NS",
+        "Radico":"RADICO.NS","VBL":"VBL.NS",
+        "Balrampur":"BALRAMCHIN.NS","Zydus Wellness":"ZYDUSWELL.NS"
+    },
+
+    "Energy": {
+        "Reliance":"RELIANCE.NS","ONGC":"ONGC.NS","NTPC":"NTPC.NS",
+        "Power Grid":"POWERGRID.NS","Coal India":"COALINDIA.NS",
+        "BPCL":"BPCL.NS","HPCL":"HPCL.NS",
+        "IOC":"IOC.NS","Adani Green":"ADANIGREEN.NS",
+        "Adani Power":"ADANIPOWER.NS","Tata Power":"TATAPOWER.NS",
+        "Torrent":"TORNTPOWER.NS","NHPC":"NHPC.NS",
+        "Suzlon":"SUZLON.NS","GAIL":"GAIL.NS"
+    },
+
+    "Auto": {
+        "Maruti":"MARUTI.NS","Tata Motors":"TATAMOTORS.NS",
+        "M&M":"M&M.NS","Bajaj Auto":"BAJAJ-AUTO.NS",
+        "Hero":"HEROMOTOCO.NS","Ashok Leyland":"ASHOKLEY.NS",
+        "TVS":"TVSMOTOR.NS","Eicher":"EICHERMOT.NS",
+        "Escorts":"ESCORTS.NS","Force Motors":"FORCEMOT.NS",
+        "Sona BLW":"SONACOMS.NS","Exide":"EXIDEIND.NS",
+        "Amara Raja":"AMARAJABAT.NS","Bosch":"BOSCHLTD.NS",
+        "MRF":"MRF.NS"
+    }
+}
+
+sector = st.sidebar.selectbox("Sector", list(sector_stocks.keys()))
+stock = st.sidebar.selectbox("Stock", list(sector_stocks[sector].keys()))
+symbol = sector_stocks[sector][stock]
+
+df = yf.download(symbol, start=start_date, end=end_date)
 
 if not df.empty:
     df = df[['Close']]
 
     model = ARIMA(df['Close'], order=(5,1,0))
     model_fit = model.fit()
+
     forecast = model_fit.forecast(steps=forecast_days)
 
     future_dates = pd.date_range(df.index[-1], periods=forecast_days+1, freq='B')[1:]
 
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(10,5))
     ax.plot(df.index, df['Close'], label="Actual")
     ax.plot(future_dates, forecast, '--', label="Forecast")
+
+    ax.set_title(f"{stock} Forecast")
     ax.legend()
+
     st.pyplot(fig)
 
-    # SAFE SIGNAL
-    predicted_price = float(np.array(forecast)[-1])
-    last_price = float(df['Close'].iloc[-1])
+    st.dataframe(pd.DataFrame({"Forecast": forecast.values}, index=future_dates))
 
-    st.subheader("📢 AI Signal")
-
-    if predicted_price > last_price:
-        st.markdown(f"<div class='signal-buy'>🟢 BUY</div>", unsafe_allow_html=True)
-    else:
-        st.markdown(f"<div class='signal-sell'>🔴 SELL</div>", unsafe_allow_html=True)
-
-# ================= PORTFOLIO =================
-st.subheader("💼 Portfolio")
-
-p_stock = st.text_input("Stock Symbol")
-p_qty = st.number_input("Qty", 1)
-p_price = st.number_input("Buy Price", 1.0)
-
-if st.button("Add"):
-    st.session_state["portfolio"].append({
-        "Stock": p_stock,
-        "Qty": p_qty,
-        "Buy Price": p_price
-    })
-
-if st.session_state["portfolio"]:
-    pf = pd.DataFrame(st.session_state["portfolio"])
-    st.dataframe(pf)
-
-# ================= LOGOUT =================
+# LOGOUT
 if st.sidebar.button("Logout"):
     st.session_state["logged_in"] = False
     st.session_state["start_app"] = False

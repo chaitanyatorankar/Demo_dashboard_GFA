@@ -191,13 +191,58 @@ if st.session_state.logged_in:
 
     forecast_days = st.sidebar.slider("Forecast Days", 5, 90, 30)
 
-    sector_stocks = {
-        "IT": {"TCS":"TCS.NS","Infosys":"INFY.NS","Wipro":"WIPRO.NS"},
-        "Banking": {"HDFC Bank":"HDFCBANK.NS","ICICI":"ICICIBANK.NS","SBI":"SBIN.NS"},
-        "FMCG": {"ITC":"ITC.NS","HUL":"HINDUNILVR.NS"},
-        "Energy": {"Reliance":"RELIANCE.NS","ONGC":"ONGC.NS"},
-        "Auto": {"Maruti":"MARUTI.NS","Tata Motors":"TATAMOTORS.NS"}
+  sector_stocks = {
+    "IT": {
+        "TCS":"TCS.NS","Infosys":"INFY.NS","Wipro":"WIPRO.NS",
+        "HCL Tech":"HCLTECH.NS","Tech Mahindra":"TECHM.NS",
+        "LTIMindtree":"LTIM.NS","Mphasis":"MPHASIS.NS",
+        "Coforge":"COFORGE.NS","L&T Tech":"LTTS.NS",
+        "Zensar":"ZENSARTECH.NS","Persistent":"PERSISTENT.NS",
+        "KPIT":"KPITTECH.NS","Birlasoft":"BSOFT.NS",
+        "Tanla":"TANLA.NS","Route Mobile":"ROUTE.NS"
+    },
+
+    "Banking": {
+        "HDFC Bank":"HDFCBANK.NS","ICICI":"ICICIBANK.NS","SBI":"SBIN.NS",
+        "Axis":"AXISBANK.NS","Kotak":"KOTAKBANK.NS",
+        "IndusInd":"INDUSINDBK.NS","Yes Bank":"YESBANK.NS",
+        "IDFC First":"IDFCFIRSTB.NS","Bandhan":"BANDHANBNK.NS",
+        "PNB":"PNB.NS","Bank of Baroda":"BANKBARODA.NS",
+        "Canara":"CANBK.NS","Union Bank":"UNIONBANK.NS",
+        "RBL":"RBLBANK.NS","Federal":"FEDERALBNK.NS"
+    },
+
+    "FMCG": {
+        "ITC":"ITC.NS","HUL":"HINDUNILVR.NS","Nestle":"NESTLEIND.NS",
+        "Britannia":"BRITANNIA.NS","Dabur":"DABUR.NS",
+        "Godrej":"GODREJCP.NS","Marico":"MARICO.NS",
+        "Colgate":"COLPAL.NS","Tata Consumer":"TATACONSUM.NS",
+        "UBL":"UBL.NS","Emami":"EMAMILTD.NS",
+        "Radico":"RADICO.NS","VBL":"VBL.NS",
+        "Balrampur":"BALRAMCHIN.NS","Zydus Wellness":"ZYDUSWELL.NS"
+    },
+
+    "Energy": {
+        "Reliance":"RELIANCE.NS","ONGC":"ONGC.NS","NTPC":"NTPC.NS",
+        "Power Grid":"POWERGRID.NS","Coal India":"COALINDIA.NS",
+        "BPCL":"BPCL.NS","HPCL":"HPCL.NS",
+        "IOC":"IOC.NS","Adani Green":"ADANIGREEN.NS",
+        "Adani Power":"ADANIPOWER.NS","Tata Power":"TATAPOWER.NS",
+        "Torrent":"TORNTPOWER.NS","NHPC":"NHPC.NS",
+        "Suzlon":"SUZLON.NS","GAIL":"GAIL.NS"
+    },
+
+    "Auto": {
+        "Maruti":"MARUTI.NS","Tata Motors":"TATAMOTORS.NS",
+        "M&M":"M&M.NS","Bajaj Auto":"BAJAJ-AUTO.NS",
+        "Hero":"HEROMOTOCO.NS","Ashok Leyland":"ASHOKLEY.NS",
+        "TVS":"TVSMOTOR.NS","Eicher":"EICHERMOT.NS",
+        "Escorts":"ESCORTS.NS","Force Motors":"FORCEMOT.NS",
+        "Sona BLW":"SONACOMS.NS","Exide":"EXIDEIND.NS",
+        "Amara Raja":"AMARAJABAT.NS","Bosch":"BOSCHLTD.NS",
+        "MRF":"MRF.NS"
     }
+}
 
     sector = st.sidebar.selectbox("Sector", list(sector_stocks.keys()))
     stock = st.sidebar.selectbox("Stock", list(sector_stocks[sector].keys()))

@@ -14,22 +14,35 @@ if "start_app" not in st.session_state:
 if "logged_in" not in st.session_state:
     st.session_state["logged_in"] = False
 
-# --- CSS ---
+# --- CSS (NEW MODERN UI LIKE IMAGE) ---
 st.markdown("""
 <style>
 .stApp {
-    background: linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.75)),
+    background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)),
     url("https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f");
     background-size: cover;
-    background-position: center;
 }
 
-.center-title {
+.title {
     text-align:center;
-    margin-top:80px;
     color:white;
-    font-size:28px;
+    font-size:42px;
     font-weight:bold;
+    margin-top:50px;
+}
+
+.subtitle {
+    text-align:center;
+    color:#ccc;
+    margin-bottom:40px;
+}
+
+.card {
+    background: rgba(255,255,255,0.08);
+    padding:20px;
+    border-radius:15px;
+    text-align:center;
+    color:white;
 }
 
 .login-box {
@@ -41,13 +54,6 @@ st.markdown("""
     margin:auto;
     margin-top:40px;
 }
-
-.error {
-    color:#ff6b6b;
-    font-size:14px;
-    text-align:center;
-    margin-top:10px;
-}
 </style>
 """, unsafe_allow_html=True)
 
@@ -56,12 +62,11 @@ st.markdown("""
 # =========================
 if not st.session_state["logged_in"]:
 
-    st.markdown('<div class="center-title">🇮🇳 Welcome to Indian Stock Analysis</div>', unsafe_allow_html=True)
+    st.markdown('<div class="title">🇮🇳 Indian Stock Analysis Platform</div>', unsafe_allow_html=True)
 
     st.markdown('<div class="login-box">', unsafe_allow_html=True)
 
     option = st.radio("", ["Login", "Sign Up", "Forgot Password"])
-
     username = st.text_input("Username")
     password = ""
 
@@ -74,15 +79,13 @@ if not st.session_state["logged_in"]:
         "demo": "demo123"
     }
 
-    error = ""
-
     if option == "Login":
         if st.button("Login"):
             if username in users and users[username] == password:
                 st.session_state["logged_in"] = True
                 st.rerun()
             else:
-                error = "Invalid username or password"
+                st.error("Invalid username or password")
 
     elif option == "Sign Up":
         if st.button("Create Account"):
@@ -91,30 +94,35 @@ if not st.session_state["logged_in"]:
     elif option == "Forgot Password":
         if st.button("Recover Password"):
             if username in users:
-                st.info(f"Your password is: {users[username]}")
+                st.info(f"Password: {users[username]}")
             else:
-                error = "User not found"
-
-    if error:
-        st.markdown(f'<div class="error">{error}</div>', unsafe_allow_html=True)
+                st.error("User not found")
 
     st.markdown('</div>', unsafe_allow_html=True)
     st.stop()
 
 # =========================
-# 🏠 HOMEPAGE
+# 🏠 HOMEPAGE (NEW DESIGN)
 # =========================
 if not st.session_state["start_app"]:
 
-    st.markdown("<h1 style='color:white;text-align:center;'>📈 Groww Your Wealth</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='color:white;text-align:center;'>Analyze Stocks & Forecast Trends</p>", unsafe_allow_html=True)
+    st.markdown('<div class="title">🚀 Indian Stock Analysis Platform</div>', unsafe_allow_html=True)
+    st.markdown('<div class="subtitle">Predict • Analyze • Grow your Wealth</div>', unsafe_allow_html=True)
 
     col1, col2, col3 = st.columns(3)
-    col1.metric("NIFTY 50", "22,300", "-1.2%")
-    col2.metric("BANKNIFTY", "48,200", "-0.8%")
-    col3.metric("SENSEX", "73,500", "-1.0%")
 
-    if st.button("🚀 Enter Dashboard"):
+    col1.markdown('<div class="card">📊<br><b>Stock Analysis</b><br>Analyze historical data</div>', unsafe_allow_html=True)
+    col2.markdown('<div class="card">🔮<br><b>Forecasting</b><br>Predict future prices</div>', unsafe_allow_html=True)
+    col3.markdown('<div class="card">⚡<br><b>Live Data</b><br>Real-time updates</div>', unsafe_allow_html=True)
+
+    st.markdown("### 📊 Market Overview")
+
+    m1, m2, m3 = st.columns(3)
+    m1.metric("NIFTY 50", "22,300", "-1.2%")
+    m2.metric("BANKNIFTY", "48,200", "-0.8%")
+    m3.metric("SENSEX", "73,500", "-1.0%")
+
+    if st.button("🚀 Start Analysis Now"):
         st.session_state["start_app"] = True
         st.rerun()
 
@@ -130,11 +138,12 @@ st.sidebar.header("Settings")
 
 start_date = st.sidebar.date_input("Start Date", d.date(2022, 1, 1))
 end_date = st.sidebar.date_input("End Date", d.date.today())
-forecast_days = st.sidebar.slider("Forecast Days", 5, 60, 10)
 
-# ✅ 25 STOCKS (SECTOR-WISE)
+# ✅ UPDATED FORECAST LIMIT (2–3 MONTHS)
+forecast_days = st.sidebar.slider("Forecast Days", 5, 90, 30)
+
+# STOCKS
 sector_stocks = {
-
     "IT": {
         "TCS":"TCS.NS",
         "Infosys":"INFY.NS",
@@ -142,7 +151,6 @@ sector_stocks = {
         "HCL Tech":"HCLTECH.NS",
         "Tech Mahindra":"TECHM.NS"
     },
-
     "Banking": {
         "HDFC Bank":"HDFCBANK.NS",
         "ICICI Bank":"ICICIBANK.NS",
@@ -150,7 +158,6 @@ sector_stocks = {
         "Axis Bank":"AXISBANK.NS",
         "Kotak Bank":"KOTAKBANK.NS"
     },
-
     "FMCG": {
         "ITC":"ITC.NS",
         "HUL":"HINDUNILVR.NS",
@@ -158,7 +165,6 @@ sector_stocks = {
         "Britannia":"BRITANNIA.NS",
         "Dabur":"DABUR.NS"
     },
-
     "Energy": {
         "Reliance":"RELIANCE.NS",
         "ONGC":"ONGC.NS",
@@ -166,7 +172,6 @@ sector_stocks = {
         "Power Grid":"POWERGRID.NS",
         "Coal India":"COALINDIA.NS"
     },
-
     "Auto": {
         "Maruti":"MARUTI.NS",
         "Tata Motors":"TATAMOTORS.NS",
@@ -190,6 +195,7 @@ if not df.empty:
     model_fit = model.fit()
 
     forecast = model_fit.forecast(steps=forecast_days)
+
     future_dates = pd.date_range(df.index[-1], periods=forecast_days+1, freq='B')[1:]
 
     fig, ax = plt.subplots(figsize=(10,5))
@@ -197,10 +203,6 @@ if not df.empty:
     ax.plot(future_dates, forecast, '--', label="Forecast")
 
     ax.set_title(f"{stock} Price Forecast")
-    ax.set_xlabel("Date")
-    ax.set_ylabel("Price")
-
-    fig.autofmt_xdate()
     ax.legend()
 
     st.pyplot(fig)

@@ -13,7 +13,7 @@ if "logged_in" not in st.session_state:
 if "page" not in st.session_state:
     st.session_state.page = "home"
 
-# ---------------- CSS (MATCH IMAGE UI) ----------------
+# ---------------- CSS ----------------
 st.markdown("""
 <style>
 .stApp {
@@ -21,20 +21,17 @@ st.markdown("""
     url("https://images.unsplash.com/photo-1504384308090-c894fdcc538d");
     background-size: cover;
 }
-
 .title {
     text-align:center;
     color:white;
     font-size:50px;
     font-weight:700;
 }
-
 .subtitle {
     text-align:center;
     color:#bbb;
     margin-bottom:30px;
 }
-
 .card {
     background: rgba(255,255,255,0.08);
     padding:25px;
@@ -43,17 +40,12 @@ st.markdown("""
     color:white;
     backdrop-filter: blur(10px);
 }
-
 .box {
     background: rgba(255,255,255,0.1);
     padding:25px;
     border-radius:18px;
     color:white;
     backdrop-filter: blur(15px);
-}
-
-.nav button {
-    width:100%;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -89,7 +81,6 @@ if st.session_state.page == "home" and not st.session_state.logged_in:
     ✔ Beginner friendly  
     """)
 
-    # ---- Bottom Split (About + Login preview) ----
     col1, col2 = st.columns(2)
 
     with col1:
@@ -129,23 +120,30 @@ if st.session_state.page == "about" and not st.session_state.logged_in:
 
     st.stop()
 
-# ---------------- LOGIN ----------------
+# ---------------- LOGIN (FIXED) ----------------
 if st.session_state.page == "login" and not st.session_state.logged_in:
 
     st.markdown('<div class="title">🔐 Login</div>', unsafe_allow_html=True)
 
+    # Demo users
     users = {"admin":"1234", "chaitanya":"finance123"}
 
-    username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
+    # FIX: Clean inputs
+    username = st.text_input("Username").strip().lower()
+    password = st.text_input("Password", type="password").strip()
+
+    st.info("Demo Login → Username: chaitanya | Password: finance123")
 
     if st.button("Login"):
-        if username in users and users[username] == password:
-            st.session_state.logged_in = True
-            st.success("Login Successful")
-            st.rerun()
+        if username in users:
+            if users[username] == password:
+                st.session_state.logged_in = True
+                st.success("Login Successful ✅")
+                st.rerun()
+            else:
+                st.error("❌ Wrong Password")
         else:
-            st.error("Invalid Credentials")
+            st.error("❌ Username not found")
 
     st.stop()
 

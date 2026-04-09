@@ -276,12 +276,85 @@ if st.session_state.logged_in and st.session_state.page in ["home", "dashboard"]
     st.sidebar.markdown("---")
 
     sector_stocks = {
-        "IT": {"TCS": "TCS.NS", "Infosys": "INFY.NS", "Wipro": "WIPRO.NS"},
-        "Banking": {"HDFC Bank": "HDFCBANK.NS", "ICICI": "ICICIBANK.NS", "SBI": "SBIN.NS"},
-        "FMCG": {"ITC": "ITC.NS", "HUL": "HINDUNILVR.NS", "Nestle": "NESTLEIND.NS"},
-        "Energy": {"Reliance": "RELIANCE.NS", "ONGC": "ONGC.NS", "NTPC": "NTPC.NS"},
-        "Auto": {"Maruti": "MARUTI.NS", "Tata Motors": "TATAMOTORS.NS", "M&M": "M&M.NS"}
+
+    "IT": {
+        "TCS": "TCS.NS", "Infosys": "INFY.NS", "Wipro": "WIPRO.NS",
+        "HCL Tech": "HCLTECH.NS", "Tech Mahindra": "TECHM.NS",
+        "L&T Tech": "LTTS.NS", "Mindtree": "MINDTREE.NS",
+        "MPHASIS": "MPHASIS.NS", "Coforge": "COFORGE.NS",
+        "Persistent": "PERSISTENT.NS", "Zensar": "ZENSARTECH.NS",
+        "Birlasoft": "BSOFT.NS", "Cyient": "CYIENT.NS",
+        "Sonata": "SONATSOFTW.NS", "KPIT Tech": "KPITTECH.NS",
+        "Route Mobile": "ROUTE.NS", "Tanla": "TANLA.NS",
+        "Intellect Design": "INTELLECT.NS", "NIIT Tech": "NIITTECH.NS",
+        "Sasken": "SASKEN.NS", "Subex": "SUBEXLTD.NS",
+        "Ramco Systems": "RAMCOSYS.NS", "3i Infotech": "3IINFOTECH.NS",
+        "Datamatics": "DATAMATICS.NS", "Firstsource": "FSL.NS"
+    },
+
+    "Banking": {
+        "HDFC Bank": "HDFCBANK.NS", "ICICI Bank": "ICICIBANK.NS",
+        "SBI": "SBIN.NS", "Kotak Bank": "KOTAKBANK.NS",
+        "Axis Bank": "AXISBANK.NS", "IndusInd Bank": "INDUSINDBK.NS",
+        "Bank of Baroda": "BANKBARODA.NS", "PNB": "PNB.NS",
+        "Canara Bank": "CANBK.NS", "Union Bank": "UNIONBANK.NS",
+        "IDFC First": "IDFCFIRSTB.NS", "Yes Bank": "YESBANK.NS",
+        "Bandhan Bank": "BANDHANBNK.NS", "RBL Bank": "RBLBANK.NS",
+        "Federal Bank": "FEDERALBNK.NS", "South Indian Bank": "SOUTHBANK.NS",
+        "UCO Bank": "UCOBANK.NS", "Central Bank": "CENTRALBK.NS",
+        "Indian Bank": "INDIANB.NS", "IOB": "IOB.NS",
+        "Karur Vysya": "KARURVYSYA.NS", "City Union": "CUB.NS",
+        "DCB Bank": "DCBBANK.NS", "J&K Bank": "J&KBANK.NS",
+        "AU Small Finance": "AUBANK.NS"
+    },
+
+    "FMCG": {
+        "ITC": "ITC.NS", "HUL": "HINDUNILVR.NS", "Nestle": "NESTLEIND.NS",
+        "Dabur": "DABUR.NS", "Britannia": "BRITANNIA.NS",
+        "Godrej Consumer": "GODREJCP.NS", "Marico": "MARICO.NS",
+        "Colgate": "COLPAL.NS", "Emami": "EMAMILTD.NS",
+        "Tata Consumer": "TATACONSUM.NS", "Patanjali": "PATANJALI.NS",
+        "VBL": "VBL.NS", "UBL": "UBL.NS",
+        "Radico": "RADICO.NS", "United Spirits": "MCDOWELL-N.NS",
+        "Hatsun": "HATSUN.NS", "Heritage": "HERITGFOOD.NS",
+        "Avanti Feeds": "AVANTIFEED.NS", "Zydus Wellness": "ZYDUSWELL.NS",
+        "Nestle India": "NESTLEIND.NS", "Mrs Bectors": "BECTORFOOD.NS",
+        "ADF Foods": "ADFFOODS.NS", "KRBL": "KRBL.NS",
+        "LT Foods": "LTFOODS.NS", "Prataap Snacks": "DIAMONDYD.NS"
+    },
+
+    "Energy": {
+        "Reliance": "RELIANCE.NS", "ONGC": "ONGC.NS", "NTPC": "NTPC.NS",
+        "Power Grid": "POWERGRID.NS", "Adani Green": "ADANIGREEN.NS",
+        "Adani Power": "ADANIPOWER.NS", "Adani Total Gas": "ATGL.NS",
+        "Coal India": "COALINDIA.NS", "BPCL": "BPCL.NS",
+        "HPCL": "HPCL.NS", "IOC": "IOC.NS",
+        "GAIL": "GAIL.NS", "Tata Power": "TATAPOWER.NS",
+        "JSW Energy": "JSWENERGY.NS", "NHPC": "NHPC.NS",
+        "Torrent Power": "TORNTPOWER.NS", "CESC": "CESC.NS",
+        "SJVN": "SJVN.NS", "Adani Energy": "ADANIENSOL.NS",
+        "Suzlon": "SUZLON.NS", "Inox Wind": "INOXWIND.NS",
+        "Orient Green": "GREENPOWER.NS", "BHEL": "BHEL.NS",
+        "Sterlite Power": "STLTECH.NS", "Reliance Power": "RPOWER.NS"
+    },
+
+    "Auto": {
+        "Maruti": "MARUTI.NS", "Tata Motors": "TATAMOTORS.NS",
+        "M&M": "M&M.NS", "Bajaj Auto": "BAJAJ-AUTO.NS",
+        "Hero MotoCorp": "HEROMOTOCO.NS", "Eicher Motors": "EICHERMOT.NS",
+        "Ashok Leyland": "ASHOKLEY.NS", "TVS Motor": "TVSMOTOR.NS",
+        "Escorts": "ESCORTS.NS", "Force Motors": "FORCEMOT.NS",
+        "Ola Electric": "OLAELEC.NS", "SML Isuzu": "SMLISUZU.NS",
+        "VST Tillers": "VSTTILLERS.NS", "Atul Auto": "ATULAUTO.NS",
+        "Amara Raja": "AMARAJABAT.NS", "Exide": "EXIDEIND.NS",
+        "Bosch": "BOSCHLTD.NS", "Motherson": "MOTHERSON.NS",
+        "Bharat Forge": "BHARATFORG.NS", "Sundaram Clayton": "SUNCLAY.NS",
+        "Endurance": "ENDURANCE.NS", "Suprajit": "SUPRAJIT.NS",
+        "Varroc": "VARROC.NS", "Jamna Auto": "JAMNAAUTO.NS",
+        "Lumax": "LUMAXIND.NS"
     }
+
+}
 
     sector = st.sidebar.selectbox("Market Sector", list(sector_stocks.keys()))
     stock_name = st.sidebar.selectbox("Select Asset", list(sector_stocks[sector].keys()))
